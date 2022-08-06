@@ -6,8 +6,7 @@ const ExerciseSchema = mongoose.Schema({
         required: true
     },
     description: {
-        type: String,   
-        required: true
+        type: String
     },
     difficulty: {
         type: Number,
@@ -16,8 +15,7 @@ const ExerciseSchema = mongoose.Schema({
     category: Array,
     tip: String,
     videoURL: {
-        type: String,
-        required: true
+        type: String
     }},
     {collection:'exercises'}
 )

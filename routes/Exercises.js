@@ -3,28 +3,9 @@ const router = express.Router()
 const exercise = require('../models/Exercise')
 require('dotenv').config()
 const jwt = require('jsonwebtoken')
+const exerciseController = require('../controllers/exerciseController')
+const middlewareController = require('../controllers/middlewareController')
 
-//Show all exercises
-router.get('/', async (req,res)=>{
-    try
-    {
-    const workout =await exercise.find()
-    res.json(workout)}
-    catch(err)
-    {console.log(workout)}
-})
-
-//Show a specific exercise
-router.get('/:id',async (req,res)=>{
-    try{
-        const workout = await exercise.findById(req.params.id);
-        res.json(workout)
-    }
-    catch(err){
-        res.json({message:err})
-    }
-    
-})
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization']
     const token = authHeader && authHeader.split(' ')[1]
@@ -35,91 +16,36 @@ function authenticateToken(req, res, next) {
       req.user = user
       next()
     })
-  }
+}
+//Show all exercises
+router.get('/', exerciseController.showAllExercise)
+
+//Show a specific exercise
+router.get('/:id',exerciseController.showOneExercise)
+
   
 //Create one exercise
-router.post('/',authenticateToken,(req,res)=>{
-    const workout = new exercise({
-        name:req.body.name,
-        description: req.body.description,
-        tip: req.body.tip,
-        difficulty: req.body.difficulty,
-        category:req.body.category,
-        videoURL:req.body.videoURL
-    })
+router.post('/', exerciseController.createExercise)
 
-    workout.save()
-    .then(data=>{
-        res.json(data)
-    })
-    .catch(err=>{
-        res.json({message:err})
-    })
-})
 
 //Update one exercise
-router.patch('/:id',authenticateToken,(req,res)=>{
-    try
-    {const updatedExercise = exercise.updateOne({_id:req.params.id},{$set:{
-        name:req.body.name,
-        description: req.body.description,
-        tip: req.body.tip,
-        difficulty: req.body.difficulty,
-        videoURL:req.body.videoURL 
-    }})
-    res.json(updatedExercise)}
-    catch(err)
-    {
-        res.json({message: err})
-    }
+router.patch('/:id', middlewareController.authenticate,exerciseController.updateExercise)
 
-
-})
 
 //Delete one exercise
-router.delete('/:id',authenticateToken, async (req,res)=>{
-    try{
-        const workout = await exercise.remove({_id:req.params.id})
-        if (workout.acknowledged==true){
-            res.send("Success")
-        }}
+router.delete('/:id', middlewareController.authenticate, exerciseController.deleteExercise)
 
-    catch(err){
-        res.json({message:err})
-    }
-})
 
 //Filter exercise by name
-router.get('/filterByName/:name', async (req,res)=>{
-    try
-    {
-    const workout = await exercise.find({name:req.params.name})
-    res.json(workout)
-}
-    catch(err)
-    {console.log(workout)}
-})
+router.get('/filterByName/:name', exerciseController.filterExercisesByName)
+
 
 //Filter exercise by category
-router.get('/filterByCategory/:cat', async (req,res)=>{
-    try
-    {
-    const workout = await exercise.find({category:req.params.cat})
-    res.json(workout)
-}
-    catch(err)
-    {console.log(workout)}
-})
+router.get('/filterByCategory/:cat', exerciseController.filterExercisesByDifficulty)
+
 
 //Filter exercise by difficulty
-router.get('/filterByDifficulty/:dif', async (req,res)=>{
-    try
-    {
-    const workout = await exercise.find({difficulty:req.params.dif})
-    res.json(workout)
-}
-    catch(err)
-    {console.log(workout)}
-})
+router.get('/filterByDifficulty/:dif', exerciseController.filterExercisesByDifficulty)
+
 
 module.exports = router

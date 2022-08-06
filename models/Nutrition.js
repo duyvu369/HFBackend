@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const NutritionSchema = mongoose.Schema({
+const RecipeSchema = mongoose.Schema({
     name: {
         type: String,
         required: true
@@ -9,17 +9,18 @@ const NutritionSchema = mongoose.Schema({
         type: String,   
         required: true
     },
-    difficulty: {
-        type: Number,
-        required: true
+   
+    ingredient:{
+        type: Array
     },
-    category: Array,
-    tip: String,
-    videoURL: {
-        type: String,
-        required: true
+    calories:{
+        type: Number
+    },
+    instruction:{
+        type: String
     }},
-    {collection:'nutrition'}
+    
+    {collection:'recipes'}
 )
 
-module.exports = mongoose.model('Nutrition',ExerciseSchema)
+module.exports = mongoose.model('Recipe',RecipeSchema)

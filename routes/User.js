@@ -3,31 +3,33 @@ const auth = express()
 const jwt = require('jsonwebtoken')
 require('dotenv').config()
 auth.use(express.json())
-const users = require('../models/User')
-const bcrypt = require('bcryptjs')
 
+const authController = require("../controllers/authController");
 
-
-auth.post('/login', async (req,res)=>{
-    const { username, password} = req.body
-    const user = await users.findOne({ username,password}).lean()
-    if(!user){
-        return res.json({status: 'error', error: 'Wrong username/password!'})
-    }
-    else {
-    const token = generateToken(user)
-    const refreshTok = jwt.sign(user, process.env.SECRET_REFRESH_TOKEN)
-    res.json({accessToken:token, refreshToken:refreshTok})
-    console.log(user)
-}})
-
-
-auth.delete('/signout', (req,res)=>{
-})
-
-
-function generateToken(user){
-    return jwt.sign(user, process.env.SECRET_ACCESS_TOKEN, {expiresIn: '15m' })
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization']
+    const token = authHeader && authHeader.split(' ')[1]
+    if (token == null) return res.sendStatus(401)
+  
+    jwt.verify(token, process.env.SECRET_ACCESS_TOKEN, (err, user) => {
+      if (err) return res.sendStatus(403)
+      req.user = user
+      next()
+    })
 }
+
+auth.post('/login',authController.login)
+
+auth.post('/signup',authController.register)
+
+auth.delete('/signout', authController.signOut)
+
+auth.get('/users',authenticateToken,authController.getAllUsers)
+
+auth.patch('/user/:id',authenticateToken, authController.updateUserInfo)
+
+auth.delete('/user/:id',authenticateToken,authController.deleteUser)
+
+
 
 module.exports = auth
